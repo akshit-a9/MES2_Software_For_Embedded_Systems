@@ -9,7 +9,7 @@ void UART2_Init(void)
     GPIOA->MODER |= (2 << (2*2)) | (2 << (3*2));
     GPIOA->AFR[0] |= (7 << (2*4)) | (7 << (3*4));
 
-    USART2->BRR = 0x1117; /* 9600 baud @ 16MHz APB1*/
+    USART2->BRR = 0x683; /* 9600 baud @ 16MHz APB1 (HSI direct) */
     USART2->CR1 = USART_CR1_TE | USART_CR1_UE;
 }
 

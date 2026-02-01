@@ -19,10 +19,10 @@ int main(void)
 
     while (1)
     {
-        RMCS_SetPosition(1, 50000, 400);
-        delay_ms(3000);
+        RMCS_SetPosition(7, 50000, 1000);
+        delay_ms(4500);
 
-        RMCS_SetPosition(1, -50000, 400);
-        delay_ms(3000);
+        RMCS_SetPosition(7, -50000, 1000);
+        delay_ms(4500);
     }
 }
