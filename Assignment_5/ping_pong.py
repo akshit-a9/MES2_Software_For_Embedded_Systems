@@ -51,10 +51,9 @@ if __name__ == "__main__":
             with lock:
                 if data_ready[read_buf]:
                     print(f"Consumer reading from buffer {read_buf}")
-
                     for item in buffer[read_buf]:
-                        if item is None:
-                            continue
+                        if consumed >= args.items:
+                            break
                         print("   consumed:", item)
                         consumed += 1
                         time.sleep(0.15)
