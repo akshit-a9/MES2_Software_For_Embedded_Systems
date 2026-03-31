@@ -38,3 +38,6 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+
+*.claude
+.claude
