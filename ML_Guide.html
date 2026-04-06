@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Field Guide — Embedded Engineers</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --border: #1e2330;
+    --accent: #00e5ff;
+    --accent2: #ff6b35;
+    --accent3: #a8ff3e;
+    --muted: #4a5568;
+    --text: #c9d1e3;
+    --text-dim: #6b7a99;
+    --code-bg: #0a0c10;
+    --keyword: #ff79c6;
+    --string: #a8ff3e;
+    --comment: #4a5568;
+    --func: #00e5ff;
+    --num: #ff6b35;
+    --var: #c9d1e3;
+    --class: #ffb86c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 60px 48px 40px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 80% 50%, rgba(0,229,255,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 3px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.15em;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 800;
+    line-height: 1.1;
+    color: #fff;
+    max-width: 640px;
+  }
+  h1 span { color: var(--accent); }
+  .subtitle {
+    margin-top: 12px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 48px 80px; }
+
+  /* ── TOC ── */
+  .toc {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 28px 0 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+  .toc a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+  }
+  .toc a:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ── SECTIONS ── */
+  section { margin-bottom: 64px; }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  h2 {
+    font-size: 26px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 32px 0 12px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  h3.green { color: var(--accent3); }
+  h3.blue { color: var(--accent); }
+
+  p { color: var(--text); margin-bottom: 12px; }
+  p strong { color: #fff; }
+
+  /* ── CODE BLOCKS ── */
+  .code-wrap {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin: 16px 0;
+    overflow: hidden;
+  }
+  .code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  pre {
+    padding: 20px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    background: transparent;
+  }
+  code { font-family: 'JetBrains Mono', monospace; }
+
+  .kw { color: var(--keyword); }
+  .str { color: var(--string); }
+  .cm { color: var(--comment); font-style: italic; }
+  .fn { color: var(--func); }
+  .nm { color: var(--num); }
+  .cl { color: var(--class); }
+  .vr { color: var(--var); }
+
+  /* ── INLINE CODE ── */
+  p code, li code, td code {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: var(--accent);
+  }
+
+  /* ── FORMULA BOX ── */
+  .formula {
+    background: linear-gradient(135deg, rgba(0,229,255,0.05), rgba(168,255,62,0.03));
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 4px;
+    padding: 18px 20px;
+    margin: 16px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: #fff;
+    text-align: center;
+  }
+  .formula .label {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  /* ── CARDS / WHEN TO USE ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px;
+  }
+  .card-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .card-title.accent { color: var(--accent); }
+  .card-title.orange { color: var(--accent2); }
+  .card-title.green { color: var(--accent3); }
+  .card-title.purple { color: #bd93f9; }
+  .card ul {
+    list-style: none;
+    padding: 0;
+  }
+  .card ul li {
+    font-size: 13px;
+    color: var(--text-dim);
+    padding: 2px 0;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .card ul li::before { content: '→ '; color: var(--muted); }
+
+  /* ── TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    margin: 16px 0;
+  }
+  th {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    text-align: left;
+    color: var(--text-dim);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 10px;
+  }
+  td {
+    border: 1px solid var(--border);
+    padding: 9px 14px;
+    color: var(--text);
+    vertical-align: top;
+  }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border-left: 3px solid var(--accent2);
+    background: rgba(255,107,53,0.06);
+    padding: 14px 18px;
+    border-radius: 0 4px 4px 0;
+    margin: 16px 0;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .callout.green {
+    border-left-color: var(--accent3);
+    background: rgba(168,255,62,0.05);
+  }
+  .callout.blue {
+    border-left-color: var(--accent);
+    background: rgba(0,229,255,0.05);
+  }
+  .callout strong { color: #fff; }
+
+  /* ── STEP LIST ── */
+  .steps { counter-reset: step; }
+  .step {
+    counter-increment: step;
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    border-radius: 2px;
+    background: var(--accent);
+    color: #000;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step-content { flex: 1; padding-top: 3px; }
+
+  /* ── SEPARATOR ── */
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="max-width:1100px;margin:0 auto;">
+    <div class="badge">ML Field Guide · EE/CS Edition</div>
+    <h1>Machine Learning<br><span>for Embedded Engineers</span></h1>
+    <p class="subtitle">// data → preprocessing → features → models → evaluation</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <nav class="toc">
+    <a href="#imports">00 · Imports</a>
+    <a href="#loading">01 · Load & Inspect</a>
+    <a href="#cleaning">02 · Cleaning</a>
+    <a href="#scaling">03 · Scaling</a>
+    <a href="#encoding">04 · Encoding</a>
+    <a href="#features">05 · Feature Eng.</a>
+    <a href="#split">06 · Train/Test Split</a>
+    <a href="#models">07 · Models</a>
+    <a href="#eval">08 · Evaluation</a>
+  </nav>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 00 IMPORTS -->
+  <section id="imports">
+    <div class="section-label">00</div>
+    <h2>Imports — What Each One Does</h2>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="cm"># ── Core data ──────────────────────────────────────────────</span>
+<span class="kw">import</span> <span class="vr">pandas</span> <span class="kw">as</span> <span class="vr">pd</span>       <span class="cm"># DataFrames — your main data container</span>
+<span class="kw">import</span> <span class="vr">numpy</span> <span class="kw">as</span> <span class="vr">np</span>        <span class="cm"># Arrays, math ops (think: fast C arrays in Python)</span>
+
+<span class="cm"># ── Visualization ──────────────────────────────────────────</span>
+<span class="kw">import</span> <span class="vr">matplotlib.pyplot</span> <span class="kw">as</span> <span class="vr">plt</span>  <span class="cm"># Base plotting library</span>
+<span class="kw">import</span> <span class="vr">seaborn</span> <span class="kw">as</span> <span class="vr">sns</span>            <span class="cm"># Statistical plots on top of matplotlib</span>
+
+<span class="cm"># ── Preprocessing ──────────────────────────────────────────</span>
+<span class="kw">from</span> <span class="vr">sklearn.preprocessing</span> <span class="kw">import</span> (
+    <span class="cl">StandardScaler</span>,   <span class="cm"># zero mean, unit variance</span>
+    <span class="cl">MinMaxScaler</span>,      <span class="cm"># squeeze to [0, 1]</span>
+    <span class="cl">RobustScaler</span>,      <span class="cm"># outlier-resistant scaling</span>
+    <span class="cl">OneHotEncoder</span>,     <span class="cm"># categorical → binary columns</span>
+)
+<span class="kw">from</span> <span class="vr">sklearn.impute</span> <span class="kw">import</span> <span class="cl">SimpleImputer</span>      <span class="cm"># fill missing values</span>
+
+<span class="cm"># ── Encoding (extended) ────────────────────────────────────</span>
+<span class="kw">import</span> <span class="vr">category_encoders</span> <span class="kw">as</span> <span class="vr">ce</span>  <span class="cm"># TargetEncoder, FrequencyEncoder etc.</span>
+<span class="cm"># pip install category_encoders</span>
+
+<span class="cm"># ── Pipeline utilities ─────────────────────────────────────</span>
+<span class="kw">from</span> <span class="vr">sklearn.pipeline</span> <span class="kw">import</span> <span class="cl">Pipeline</span>, <span class="fn">make_pipeline</span>
+<span class="kw">from</span> <span class="vr">sklearn.compose</span> <span class="kw">import</span> <span class="cl">ColumnTransformer</span>
+
+<span class="cm"># ── Train/test split ───────────────────────────────────────</span>
+<span class="kw">from</span> <span class="vr">sklearn.model_selection</span> <span class="kw">import</span> (
+    <span class="fn">train_test_split</span>,
+    <span class="cl">StratifiedShuffleSplit</span>,
+    <span class="cl">GridSearchCV</span>,
+    <span class="fn">cross_val_score</span>,
+)
+
+<span class="cm"># ── Models ─────────────────────────────────────────────────</span>
+<span class="kw">from</span> <span class="vr">sklearn.linear_model</span> <span class="kw">import</span> <span class="cl">Ridge</span>
+<span class="kw">from</span> <span class="vr">sklearn.tree</span> <span class="kw">import</span> <span class="cl">DecisionTreeRegressor</span>
+<span class="kw">from</span> <span class="vr">sklearn.ensemble</span> <span class="kw">import</span> <span class="cl">RandomForestRegressor</span>
+<span class="kw">from</span> <span class="vr">xgboost</span> <span class="kw">import</span> <span class="cl">XGBRegressor</span>          <span class="cm"># pip install xgboost</span>
+
+<span class="cm"># ── Metrics ────────────────────────────────────────────────</span>
+<span class="kw">from</span> <span class="vr">sklearn.metrics</span> <span class="kw">import</span> <span class="fn">mean_squared_error</span>
+
+<span class="cm"># ── Misc ───────────────────────────────────────────────────</span>
+<span class="kw">import</span> <span class="vr">re</span>      <span class="cm"># regex — for parsing strings like "2.4GHz", "8GB"</span>
+<span class="kw">import</span> <span class="vr">sys</span>     <span class="cm"># system info</span></pre>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 01 LOAD -->
+  <section id="loading">
+    <div class="section-label">01</div>
+    <h2>Load & Inspect</h2>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="vr">df</span> <span class="kw">=</span> <span class="vr">pd</span>.<span class="fn">read_csv</span>(<span class="str">"Dataset-Laptops.csv"</span>)
+
+<span class="cm"># ── Shape & types ──────────────────────────────────────────</span>
+<span class="vr">df</span>.<span class="fn">shape</span>         <span class="cm"># (rows, cols)</span>
+<span class="vr">df</span>.<span class="fn">info</span>()        <span class="cm"># column names, dtypes, non-null counts — run this first</span>
+<span class="vr">df</span>.<span class="fn">describe</span>()    <span class="cm"># count, mean, std, min, quartiles, max — numerical only</span>
+<span class="vr">df</span>.<span class="fn">head</span>(<span class="nm">3</span>)       <span class="cm"># first 3 rows</span>
+<span class="vr">df</span>.<span class="fn">tail</span>(<span class="nm">3</span>)       <span class="cm"># last 3 rows</span>
+<span class="vr">df</span>.<span class="fn">sample</span>(<span class="nm">3</span>)     <span class="cm"># random 3 rows</span>
+
+<span class="cm"># ── Separate by dtype ──────────────────────────────────────</span>
+<span class="vr">cat_cols</span> <span class="kw">=</span> <span class="vr">df</span>.<span class="fn">select_dtypes</span>(<span class="vr">include</span><span class="kw">=</span>[<span class="str">'object'</span>, <span class="str">'category'</span>]).<span class="vr">columns</span>.<span class="fn">tolist</span>()
+<span class="vr">num_cols</span> <span class="kw">=</span> <span class="vr">df</span>.<span class="fn">select_dtypes</span>(<span class="vr">include</span><span class="kw">=</span>[<span class="str">'number'</span>]).<span class="vr">columns</span>.<span class="fn">tolist</span>()
+
+<span class="cm"># ── Missing values ─────────────────────────────────────────</span>
+<span class="vr">df</span>.<span class="fn">isnull</span>().<span class="fn">sum</span>()                   <span class="cm"># count of NaN per column</span>
+<span class="vr">df</span>.<span class="fn">isnull</span>().<span class="fn">sum</span>() <span class="kw">/</span> <span class="fn">len</span>(<span class="vr">df</span>) <span class="kw">*</span> <span class="nm">100</span>   <span class="cm"># as % — drop col if > 40%</span>
+
+<span class="cm"># ── Categorical value counts ───────────────────────────────</span>
+<span class="vr">df</span>[<span class="str">"Company"</span>].<span class="fn">value_counts</span>()         <span class="cm"># frequency of each category</span>
+<span class="vr">df</span>[<span class="str">"Company"</span>].<span class="fn">nunique</span>()             <span class="cm"># number of unique categories</span>
+
+<span class="cm"># ── Histogram (numerical dist) ─────────────────────────────</span>
+<span class="vr">df</span>.<span class="fn">hist</span>(<span class="vr">bins</span><span class="kw">=</span><span class="nm">50</span>, <span class="vr">figsize</span><span class="kw">=</span>(<span class="nm">12</span>, <span class="nm">8</span>))
+<span class="vr">plt</span>.<span class="fn">show</span>()</pre>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 02 CLEANING -->
+  <section id="cleaning">
+    <div class="section-label">02</div>
+    <h2>Data Cleaning</h2>
+
+    <h3 class="green">Strip units from strings</h3>
+    <p>Sensor data often arrives as <code>"8GB"</code> or <code>"1.5Kg"</code>. Strip the unit, cast to number.</p>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="vr">df</span>[<span class="str">'Ram'</span>] <span class="kw">=</span> (
+    <span class="vr">df</span>[<span class="str">'Ram'</span>]
+    .<span class="fn">str.replace</span>(<span class="str">'GB'</span>, <span class="str">''</span>, <span class="vr">case</span><span class="kw">=</span><span class="kw">False</span>, <span class="vr">regex</span><span class="kw">=</span><span class="kw">False</span>)   <span class="cm"># "8GB" → "8"</span>
+    .<span class="fn">str.strip</span>()                                          <span class="cm"># remove whitespace</span>
+    .<span class="fn">astype</span>(<span class="fn">int</span>)                                          <span class="cm"># "8" → 8</span>
+)
+
+<span class="vr">df</span>[<span class="str">'Weight'</span>] <span class="kw">=</span> (
+    <span class="vr">df</span>[<span class="str">'Weight'</span>]
+    .<span class="fn">str.replace</span>(<span class="str">'kg'</span>, <span class="str">''</span>, <span class="vr">case</span><span class="kw">=</span><span class="kw">False</span>, <span class="vr">regex</span><span class="kw">=</span><span class="kw">False</span>)
+    .<span class="fn">str.strip</span>()
+    .<span class="fn">astype</span>(<span class="fn">float</span>)
+)</pre>
+    </div>
+
+    <h3 class="green">Handle missing values</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="kw">from</span> <span class="vr">sklearn.impute</span> <span class="kw">import</span> <span class="cl">SimpleImputer</span>
+
+<span class="cm"># Numerical: fill with median (robust to outliers)</span>
+<span class="vr">imp_num</span> <span class="kw">=</span> <span class="cl">SimpleImputer</span>(<span class="vr">strategy</span><span class="kw">=</span><span class="str">'median'</span>)
+<span class="vr">df</span>[<span class="vr">num_cols</span>] <span class="kw">=</span> <span class="vr">imp_num</span>.<span class="fn">fit_transform</span>(<span class="vr">df</span>[<span class="vr">num_cols</span>])
+
+<span class="cm"># Categorical: fill with most frequent</span>
+<span class="vr">imp_cat</span> <span class="kw">=</span> <span class="cl">SimpleImputer</span>(<span class="vr">strategy</span><span class="kw">=</span><span class="str">'most_frequent'</span>)
+<span class="vr">df</span>[<span class="vr">cat_cols</span>] <span class="kw">=</span> <span class="vr">imp_cat</span>.<span class="fn">fit_transform</span>(<span class="vr">df</span>[<span class="vr">cat_cols</span>])
+
+<span class="cm"># Or just fill manually</span>
+<span class="vr">df</span>[<span class="str">'CPU_GHz'</span>] <span class="kw">=</span> <span class="vr">df</span>[<span class="str">'CPU_GHz'</span>].<span class="fn">fillna</span>(<span class="vr">df</span>[<span class="str">'CPU_GHz'</span>].<span class="fn">median</span>())</pre>
+    </div>
+
+    <h3 class="green">Drop columns</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="vr">df</span>.<span class="fn">drop</span>(<span class="vr">columns</span><span class="kw">=</span>[<span class="str">'ID'</span>, <span class="str">'raw_text_col'</span>], <span class="vr">inplace</span><span class="kw">=</span><span class="kw">True</span>)
+
+<span class="cm"># Drop ALL remaining object (string) columns in one shot</span>
+<span class="vr">object_cols</span> <span class="kw">=</span> <span class="vr">df</span>.<span class="fn">select_dtypes</span>(<span class="vr">include</span><span class="kw">=</span>[<span class="str">'object'</span>]).<span class="vr">columns</span>
+<span class="vr">df</span> <span class="kw">=</span> <span class="vr">df</span>.<span class="fn">drop</span>(<span class="vr">columns</span><span class="kw">=</span><span class="vr">object_cols</span>)</pre>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 03 SCALING -->
+  <section id="scaling">
+    <div class="section-label">03</div>
+    <h2>Scaling — Which One & When</h2>
+
+    <div class="callout blue">
+      <strong>Rule:</strong> Scale numerical features before any linear model or distance-based model. Tree-based models (Decision Tree, Random Forest, XGBoost) don't need it, but it never hurts.
+    </div>
+
+    <!-- ── Standard Scaler ── -->
+    <h3 class="blue">StandardScaler — default choice</h3>
+    <p><strong>When:</strong> Numerical columns with different scales, data is roughly normally distributed, using linear models (Ridge, SVM, logistic regression).</p>
+
+    <div class="formula">
+      <div class="label">Formula</div>
+      z = (x − μ) / σ
+    </div>
+    <p>After transform: <strong>mean = 0, std = 1</strong>. Values are still unbounded (can go &lt; 0 or &gt; 1).</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="kw">from</span> <span class="vr">sklearn.preprocessing</span> <span class="kw">import</span> <span class="cl">StandardScaler</span>
+
+<span class="vr">scaler</span> <span class="kw">=</span> <span class="cl">StandardScaler</span>()
+
+<span class="cm"># Fit on TRAINING data only, then transform both sets</span>
+<span class="vr">X_train_scaled</span> <span class="kw">=</span> <span class="vr">scaler</span>.<span class="fn">fit_transform</span>(<span class="vr">X_train</span>)  <span class="cm"># learns μ, σ</span>
+<span class="vr">X_test_scaled</span>  <span class="kw">=</span> <span class="vr">scaler</span>.<span class="fn">transform</span>(<span class="vr">X_test</span>)       <span class="cm"># uses same μ, σ</span>
+
+<span class="cm"># Column-by-column (like in the notebook)</span>
+<span class="kw">for</span> <span class="vr">col</span> <span class="kw">in</span> <span class="vr">num_cols</span>:
+    <span class="vr">s</span> <span class="kw">=</span> <span class="cl">StandardScaler</span>()
+    <span class="vr">df</span>[<span class="vr">col</span>] <span class="kw">=</span> <span class="vr">s</span>.<span class="fn">fit_transform</span>(<span class="vr">df</span>[[<span class="vr">col</span>]])</pre>
+    </div>
+
+    <!-- ── MinMax ── -->
+    <h3 class="blue">MinMaxScaler — bounded output</h3>
+    <p><strong>When:</strong> You need output in [0, 1] (e.g., feeding into a neural network or TinyML model). No large outliers in data.</p>
+
+    <div class="formula">
+      <div class="label">Formula</div>
+      x' = (x − x_min) / (x_max − x_min)
+    </div>
+    <p>After transform: <strong>min = 0, max = 1</strong>. A single outlier destroys this — use RobustScaler instead.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="kw">from</span> <span class="vr">sklearn.preprocessing</span> <span class="kw">import</span> <span class="cl">MinMaxScaler</span>
+
+<span class="vr">scaler</span> <span class="kw">=</span> <span class="cl">MinMaxScaler</span>()            <span class="cm"># default range: [0, 1]</span>
+<span class="vr">scaler</span> <span class="kw">=</span> <span class="cl">MinMaxScaler</span>(<span class="vr">feature_range</span><span class="kw">=</span>(<span class="kw">-</span><span class="nm">1</span>, <span class="nm">1</span>))  <span class="cm"># custom range</span>
+
+<span class="vr">X_scaled</span> <span class="kw">=</span> <span class="vr">scaler</span>.<span class="fn">fit_transform</span>(<span class="vr">X_train</span>)</pre>
+    </div>
+
+    <!-- ── Robust ── -->
+    <h3 class="blue">RobustScaler — outlier-resistant</h3>
+    <p><strong>When:</strong> Data has outliers (sensor spikes, bad readings). Uses median and IQR instead of mean/std.</p>
+
+    <div class="formula">
+      <div class="label">Formula</div>
+      x' = (x − median) / IQR &nbsp;&nbsp;&nbsp; IQR = Q75 − Q25
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="kw">from</span> <span class="vr">sklearn.preprocessing</span> <span class="kw">import</span> <span class="cl">RobustScaler</span>
+
+<span class="vr">scaler</span> <span class="kw">=</span> <span class="cl">RobustScaler</span>()
+<span class="vr">X_scaled</span> <span class="kw">=</span> <span class="vr">scaler</span>.<span class="fn">fit_transform</span>(<span class="vr">X_train</span>)</pre>
+    </div>
+
+    <!-- ── Log ── -->
+    <h3 class="blue">Log Transform — skewed distributions</h3>
+    <p><strong>When:</strong> Data is heavily right-skewed (price, income, power consumption). Compresses the tail.</p>
+
+    <div class="formula">
+      <div class="label">Formula</div>
+      x' = log(x + 1) &nbsp;&nbsp;&nbsp; (+1 avoids log(0))
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="vr">df</span>[<span class="str">'Price_log'</span>] <span class="kw">=</span> <span class="vr">np</span>.<span class="fn">log1p</span>(<span class="vr">df</span>[<span class="str">'Price'</span>])  <span class="cm"># log(x + 1)</span>
+
+<span class="cm"># Reverse when you need actual price back</span>
+<span class="vr">predicted_price</span> <span class="kw">=</span> <span class="vr">np</span>.<span class="fn">expm1</span>(<span class="vr">model</span>.<span class="fn">predict</span>(<span class="vr">X_test</span>))</pre>
+    </div>
+
+    <!-- ── Scaling Decision Table ── -->
+    <h3 class="green">Quick Decision Table</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Situation</th>
+          <th>Scaler</th>
+          <th>Why</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Normal-ish distribution, linear model</td><td><code>StandardScaler</code></td><td>Centers data, equal variance</td></tr>
+        <tr><td>Need [0,1] output, clean data</td><td><code>MinMaxScaler</code></td><td>Bounded range</td></tr>
+        <tr><td>Outliers present (sensor spikes)</td><td><code>RobustScaler</code></td><td>Uses median/IQR</td></tr>
+        <tr><td>Right-skewed (prices, power)</td><td><code>np.log1p()</code></td><td>Compresses tail</td></tr>
+        <tr><td>Tree models (RF, XGBoost)</td><td>None needed</td><td>Trees are scale-invariant</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>Critical:</strong> Always <code>fit</code> on training data only. Then <code>transform</code> both train and test. If you fit on test data, you've leaked future information into your model.
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 04 ENCODING -->
+  <section id="encoding">
+    <div class="section-label">04</div>
+    <h2>Encoding Categorical Variables</h2>
+
+    <p>ML models need numbers. Categorical columns (<code>object</code> dtype) must be converted. Choice depends on cardinality (number of unique values) and the model type.</p>
+
+    <!-- ── OHE ── -->
+    <h3 class="orange">One-Hot Encoding (OHE)</h3>
+    <p><strong>When:</strong> Low cardinality (&lt; ~20 unique values), no natural ordering, using linear/tree models.</p>
+    <p><strong>How it works:</strong> Creates one binary column per category. <code>"TypeName=Gaming"</code> → column <code>TypeName_Gaming = 1</code>, all others = 0.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="kw">from</span> <span class="vr">sklearn.preprocessing</span> <span class="kw">import</span> <span class="cl">OneHotEncoder</span>
+<span class="kw">import</span> <span class="vr">pandas</span> <span class="kw">as</span> <span class="vr">pd</span>
+
+<span class="vr">enc</span> <span class="kw">=</span> <span class="cl">OneHotEncoder</span>(<span class="vr">sparse_output</span><span class="kw">=</span><span class="kw">False</span>, <span class="vr">handle_unknown</span><span class="kw">=</span><span class="str">'ignore'</span>)
+<span class="vr">encoded</span> <span class="kw">=</span> <span class="vr">enc</span>.<span class="fn">fit_transform</span>(<span class="vr">df</span>[[<span class="str">'TypeName'</span>]])
+<span class="vr">enc_df</span>  <span class="kw">=</span> <span class="vr">pd</span>.<span class="cl">DataFrame</span>(<span class="vr">encoded</span>, <span class="vr">columns</span><span class="kw">=</span><span class="vr">enc</span>.<span class="fn">get_feature_names_out</span>([<span class="str">'TypeName'</span>]))
+<span class="vr">df</span> <span class="kw">=</span> <span class="vr">pd</span>.<span class="fn">concat</span>([<span class="vr">df</span>, <span class="vr">enc_df</span>], <span class="vr">axis</span><span class="kw">=</span><span class="nm">1</span>)
+
+<span class="cm"># Shortcut with pandas (same result)</span>
+<span class="vr">df</span> <span class="kw">=</span> <span class="vr">pd</span>.<span class="fn">get_dummies</span>(<span class="vr">df</span>, <span class="vr">columns</span><span class="kw">=</span>[<span class="str">'TypeName'</span>], <span class="vr">drop_first</span><span class="kw">=</span><span class="kw">True</span>)</pre>
+    </div>
+
+    <!-- ── Target Encoding ── -->
+    <h3 class="orange">Target Encoding</h3>
+    <p><strong>When:</strong> High cardinality (&gt; 20 unique values), category has a relationship with target (e.g., Apple laptops cost more). Works well with linear models.</p>
+    <p><strong>How it works:</strong> Replaces category with the <em>mean target value</em> for that category. <code>"Apple"</code> → mean price of Apple laptops.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="kw">import</span> <span class="vr">category_encoders</span> <span class="kw">as</span> <span class="vr">ce</span>
+
+<span class="vr">enc</span> <span class="kw">=</span> <span class="vr">ce</span>.<span class="cl">TargetEncoder</span>(<span class="vr">cols</span><span class="kw">=</span>[<span class="str">'Cpu'</span>])
+<span class="vr">df</span>[<span class="str">'CPU_TE'</span>] <span class="kw">=</span> <span class="vr">enc</span>.<span class="fn">fit_transform</span>(<span class="vr">df</span>[[<span class="str">'Cpu'</span>]], <span class="vr">df</span>[<span class="str">'Price'</span>])
+
+<span class="cm"># Manual equivalent (mean encoding)</span>
+<span class="vr">means</span> <span class="kw">=</span> <span class="vr">df</span>.<span class="fn">groupby</span>(<span class="str">'Company'</span>)[<span class="str">'Price'</span>].<span class="fn">mean</span>()
+<span class="vr">df</span>[<span class="str">'Company_TE'</span>] <span class="kw">=</span> <span class="vr">df</span>[<span class="str">'Company'</span>].<span class="fn">map</span>(<span class="vr">means</span>)</pre>
+    </div>
+
+    <!-- ── Frequency Encoding ── -->
+    <h3 class="orange">Frequency Encoding</h3>
+    <p><strong>When:</strong> High cardinality, no strong target relationship, or you suspect rarer categories matter. Replaces category with its <em>frequency proportion</em> in the dataset.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="kw">def</span> <span class="fn">frequency_encode</span>(<span class="vr">df</span>, <span class="vr">col</span>):
+    <span class="vr">freq</span> <span class="kw">=</span> <span class="vr">df</span>[<span class="vr">col</span>].<span class="fn">value_counts</span>(<span class="vr">normalize</span><span class="kw">=</span><span class="kw">True</span>)  <span class="cm"># proportions</span>
+    <span class="vr">df</span>[<span class="vr">col</span> <span class="kw">+</span> <span class="str">'_freq'</span>] <span class="kw">=</span> <span class="vr">df</span>[<span class="vr">col</span>].<span class="fn">map</span>(<span class="vr">freq</span>)
+    <span class="kw">return</span> <span class="vr">df</span>
+
+<span class="vr">df</span> <span class="kw">=</span> <span class="fn">frequency_encode</span>(<span class="vr">df</span>, <span class="str">'Company'</span>)</pre>
+    </div>
+
+    <!-- ── Encoding Decision Table ── -->
+    <h3 class="green">Quick Decision Table</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Situation</th>
+          <th>Method</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Few categories (&lt;20), linear/tree model</td><td>One-Hot Encoding</td></tr>
+        <tr><td>Many categories (&gt;20), target correlation</td><td>Target Encoding</td></tr>
+        <tr><td>Many categories, rarity matters</td><td>Frequency Encoding</td></tr>
+        <tr><td>Natural order (low/medium/high)</td><td>Ordinal Encoding (0,1,2)</td></tr>
+        <tr><td>Tree model, don't care much</td><td>Target or Frequency — both fine</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 05 FEATURES -->
+  <section id="features">
+    <div class="section-label">05</div>
+    <h2>Feature Engineering</h2>
+
+    <p>Raw data is rarely in the best form for a model. Feature engineering = creating new, more informative columns.</p>
+
+    <h3 class="green">Parse structured info out of strings</h3>
+    <p>A column like <code>"Intel Core i5 2.3GHz"</code> contains four signals: brand, family, model, clock speed. Extract them separately.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="kw">import</span> <span class="vr">re</span>
+
+<span class="kw">def</span> <span class="fn">parse_cpu</span>(<span class="vr">cpu_str</span>):
+    <span class="kw">if</span> <span class="vr">pd</span>.<span class="fn">isna</span>(<span class="vr">cpu_str</span>):
+        <span class="kw">return</span> <span class="vr">pd</span>.<span class="cl">Series</span>([<span class="kw">None</span>]*<span class="nm">4</span>, <span class="vr">index</span><span class="kw">=</span>[<span class="str">'Brand'</span>,<span class="str">'Family'</span>,<span class="str">'Model'</span>,<span class="str">'GHz'</span>])
+    <span class="vr">tokens</span> <span class="kw">=</span> <span class="vr">cpu_str</span>.<span class="fn">split</span>()
+
+    <span class="vr">brand</span>   <span class="kw">=</span> <span class="vr">tokens</span>[<span class="nm">0</span>]                                        <span class="cm"># "Intel"</span>
+    <span class="vr">family</span>  <span class="kw">=</span> <span class="vr">tokens</span>[<span class="nm">1</span>] <span class="kw">if</span> <span class="fn">len</span>(<span class="vr">tokens</span>) <span class="kw">&gt;</span> <span class="nm">1</span> <span class="kw">else</span> <span class="kw">None</span>            <span class="cm"># "Core"</span>
+    <span class="vr">ghz_m</span>  <span class="kw">=</span> <span class="vr">re</span>.<span class="fn">search</span>(<span class="str">r'(\d+\.?\d*)GHz'</span>, <span class="vr">cpu_str</span>)
+    <span class="vr">ghz</span>    <span class="kw">=</span> <span class="fn">float</span>(<span class="vr">ghz_m</span>.<span class="fn">group</span>(<span class="nm">1</span>)) <span class="kw">if</span> <span class="vr">ghz_m</span> <span class="kw">else</span> <span class="kw">None</span>
+    <span class="vr">model</span>  <span class="kw">=</span> <span class="kw">None</span>
+    <span class="kw">for</span> <span class="vr">t</span> <span class="kw">in</span> <span class="fn">reversed</span>(<span class="vr">tokens</span>):
+        <span class="kw">if</span> <span class="vr">re</span>.<span class="fn">search</span>(<span class="str">r'\d'</span>, <span class="vr">t</span>) <span class="kw">and</span> <span class="str">'GHz'</span> <span class="kw">not in</span> <span class="vr">t</span>:
+            <span class="vr">model</span> <span class="kw">=</span> <span class="vr">t</span>; <span class="kw">break</span>
+
+    <span class="kw">return</span> <span class="vr">pd</span>.<span class="cl">Series</span>([<span class="vr">brand</span>, <span class="vr">family</span>, <span class="vr">model</span>, <span class="vr">ghz</span>],
+                     <span class="vr">index</span><span class="kw">=</span>[<span class="str">'Brand'</span>,<span class="str">'Family'</span>,<span class="str">'Model'</span>,<span class="str">'GHz'</span>])
+
+<span class="vr">df</span>[[<span class="str">'CPU_Brand'</span>,<span class="str">'CPU_Family'</span>,<span class="str">'CPU_Model'</span>,<span class="str">'CPU_GHz'</span>]] <span class="kw">=</span> \
+    <span class="vr">df</span>[<span class="str">'Cpu'</span>].<span class="fn">apply</span>(<span class="vr">parse_cpu</span>)</pre>
+    </div>
+
+    <h3 class="green">Correlation check — does a new feature actually help?</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="cm"># Pearson correlation with target</span>
+<span class="vr">corr</span> <span class="kw">=</span> <span class="vr">df</span>.<span class="fn">corr</span>()[<span class="str">'Price'</span>].<span class="fn">sort_values</span>(<span class="vr">ascending</span><span class="kw">=</span><span class="kw">False</span>)
+<span class="fn">print</span>(<span class="vr">corr</span>)
+<span class="cm"># > 0.3 worth keeping, < 0.05 probably useless</span>
+
+<span class="cm"># Heatmap of all correlations</span>
+<span class="vr">sns</span>.<span class="fn">heatmap</span>(<span class="vr">df</span>.<span class="fn">corr</span>(), <span class="vr">annot</span><span class="kw">=</span><span class="kw">True</span>, <span class="vr">fmt</span><span class="kw">=</span><span class="str">'.2f'</span>, <span class="vr">cmap</span><span class="kw">=</span><span class="str">'coolwarm'</span>)
+<span class="vr">plt</span>.<span class="fn">show</span>()</pre>
+    </div>
+
+    <h3 class="green">Discretize continuous into bins</h3>
+    <p>Useful for stratified splitting — ensures all price ranges are represented in both train and test.</p>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="vr">df</span>[<span class="str">'price_cat'</span>] <span class="kw">=</span> <span class="vr">pd</span>.<span class="fn">cut</span>(
+    <span class="vr">df</span>[<span class="str">'Price'</span>],
+    <span class="vr">bins</span><span class="kw">=</span>[<span class="nm">0</span>, <span class="nm">50_000</span>, <span class="nm">100_000</span>, <span class="vr">np</span>.<span class="vr">inf</span>],
+    <span class="vr">labels</span><span class="kw">=</span>[<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>]
+)
+<span class="vr">df</span>[<span class="str">'price_cat'</span>].<span class="fn">value_counts</span>().<span class="fn">sort_index</span>().<span class="fn">plot</span>.<span class="fn">bar</span>()
+<span class="vr">plt</span>.<span class="fn">show</span>()</pre>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 06 SPLIT -->
+  <section id="split">
+    <div class="section-label">06</div>
+    <h2>Train / Test Split</h2>
+
+    <h3 class="blue">Simple random split</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="kw">from</span> <span class="vr">sklearn.model_selection</span> <span class="kw">import</span> <span class="fn">train_test_split</span>
+
+<span class="vr">X</span> <span class="kw">=</span> <span class="vr">df</span>.<span class="fn">drop</span>(<span class="vr">columns</span><span class="kw">=</span>[<span class="str">'Price'</span>])
+<span class="vr">y</span> <span class="kw">=</span> <span class="vr">df</span>[<span class="str">'Price'</span>]
+
+<span class="vr">X_train</span>, <span class="vr">X_test</span>, <span class="vr">y_train</span>, <span class="vr">y_test</span> <span class="kw">=</span> <span class="fn">train_test_split</span>(
+    <span class="vr">X</span>, <span class="vr">y</span>, <span class="vr">test_size</span><span class="kw">=</span><span class="nm">0.2</span>, <span class="vr">random_state</span><span class="kw">=</span><span class="nm">42</span>
+)</pre>
+    </div>
+
+    <h3 class="blue">Stratified split (use when target is imbalanced)</h3>
+    <p>Ensures each price bracket has proportional representation in both splits. Essential when your dataset is small or skewed.</p>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="kw">from</span> <span class="vr">sklearn.model_selection</span> <span class="kw">import</span> <span class="cl">StratifiedShuffleSplit</span>
+
+<span class="vr">split</span> <span class="kw">=</span> <span class="cl">StratifiedShuffleSplit</span>(<span class="vr">n_splits</span><span class="kw">=</span><span class="nm">1</span>, <span class="vr">test_size</span><span class="kw">=</span><span class="nm">0.2</span>, <span class="vr">random_state</span><span class="kw">=</span><span class="nm">42</span>)
+
+<span class="kw">for</span> <span class="vr">train_idx</span>, <span class="vr">test_idx</span> <span class="kw">in</span> <span class="vr">split</span>.<span class="fn">split</span>(<span class="vr">df</span>, <span class="vr">df</span>[<span class="str">'price_cat'</span>]):
+    <span class="vr">train_set</span> <span class="kw">=</span> <span class="vr">df</span>.<span class="fn">iloc</span>[<span class="vr">train_idx</span>]
+    <span class="vr">test_set</span>  <span class="kw">=</span> <span class="vr">df</span>.<span class="fn">iloc</span>[<span class="vr">test_idx</span>]
+
+<span class="cm"># Separate features and labels</span>
+<span class="vr">X_train</span> <span class="kw">=</span> <span class="vr">train_set</span>.<span class="fn">drop</span>(<span class="vr">columns</span><span class="kw">=</span>[<span class="str">'Price'</span>, <span class="str">'price_cat'</span>])
+<span class="vr">y_train</span> <span class="kw">=</span> <span class="vr">train_set</span>[<span class="str">'Price'</span>].<span class="fn">copy</span>()
+<span class="vr">X_test</span>  <span class="kw">=</span> <span class="vr">test_set</span>.<span class="fn">drop</span>(<span class="vr">columns</span><span class="kw">=</span>[<span class="str">'Price'</span>, <span class="str">'price_cat'</span>])
+<span class="vr">y_test</span>  <span class="kw">=</span> <span class="vr">test_set</span>[<span class="str">'Price'</span>].<span class="fn">copy</span>()</pre>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 07 MODELS -->
+  <section id="models">
+    <div class="section-label">07</div>
+    <h2>Models</h2>
+
+    <h3 class="orange">Ridge — Regularized Linear Regression</h3>
+    <p>Linear regression + L2 penalty to prevent overfitting. Good baseline. Needs scaling.</p>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="kw">from</span> <span class="vr">sklearn.linear_model</span> <span class="kw">import</span> <span class="cl">Ridge</span>
+<span class="kw">from</span> <span class="vr">sklearn.model_selection</span> <span class="kw">import</span> <span class="cl">GridSearchCV</span>
+
+<span class="vr">ridge</span> <span class="kw">=</span> <span class="cl">Ridge</span>()
+<span class="vr">params</span> <span class="kw">=</span> {<span class="str">'alpha'</span>: [<span class="nm">0.01</span>, <span class="nm">0.1</span>, <span class="nm">1.0</span>, <span class="nm">10.0</span>]}
+
+<span class="vr">grid</span> <span class="kw">=</span> <span class="cl">GridSearchCV</span>(<span class="vr">ridge</span>, <span class="vr">params</span>, <span class="vr">cv</span><span class="kw">=</span><span class="nm">10</span>, <span class="vr">scoring</span><span class="kw">=</span><span class="str">'neg_mean_squared_error'</span>)
+<span class="vr">grid</span>.<span class="fn">fit</span>(<span class="vr">X_train</span>, <span class="vr">y_train</span>)
+<span class="fn">print</span>(<span class="vr">grid</span>.<span class="vr">best_params_</span>)
+
+<span class="vr">preds</span> <span class="kw">=</span> <span class="vr">grid</span>.<span class="fn">predict</span>(<span class="vr">X_test</span>)</pre>
+    </div>
+
+    <h3 class="orange">Random Forest — Ensemble of Decision Trees</h3>
+    <p>Builds many trees on random subsets, averages their outputs. Robust, handles non-linearity, feature importance built-in. Scale-invariant.</p>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="kw">from</span> <span class="vr">sklearn.ensemble</span> <span class="kw">import</span> <span class="cl">RandomForestRegressor</span>
+<span class="kw">from</span> <span class="vr">sklearn.pipeline</span> <span class="kw">import</span> <span class="fn">make_pipeline</span>
+<span class="kw">from</span> <span class="vr">sklearn.model_selection</span> <span class="kw">import</span> <span class="fn">cross_val_score</span>
+
+<span class="vr">rf</span> <span class="kw">=</span> <span class="cl">RandomForestRegressor</span>(<span class="vr">random_state</span><span class="kw">=</span><span class="nm">42</span>)
+<span class="vr">rf_params</span> <span class="kw">=</span> {
+    <span class="str">'n_estimators'</span>: [<span class="nm">100</span>, <span class="nm">200</span>],       <span class="cm"># number of trees</span>
+    <span class="str">'max_depth'</span>: [<span class="nm">5</span>, <span class="nm">10</span>, <span class="kw">None</span>],        <span class="cm"># None = grow until pure</span>
+    <span class="str">'min_samples_split'</span>: [<span class="nm">2</span>, <span class="nm">5</span>]
+}
+<span class="vr">rf_grid</span> <span class="kw">=</span> <span class="cl">GridSearchCV</span>(<span class="vr">rf</span>, <span class="vr">rf_params</span>, <span class="vr">cv</span><span class="kw">=</span><span class="nm">10</span>,
+                       <span class="vr">scoring</span><span class="kw">=</span><span class="str">'neg_mean_squared_error'</span>, <span class="vr">n_jobs</span><span class="kw">=</span><span class="kw">-</span><span class="nm">1</span>)
+<span class="vr">rf_grid</span>.<span class="fn">fit</span>(<span class="vr">X_train</span>, <span class="vr">y_train</span>)
+<span class="vr">preds</span> <span class="kw">=</span> <span class="vr">rf_grid</span>.<span class="fn">predict</span>(<span class="vr">X_test</span>)</pre>
+    </div>
+
+    <h3 class="orange">XGBoost — Gradient Boosted Trees</h3>
+    <p>Builds trees sequentially, each correcting the last. State of the art for tabular data. Scale-invariant.</p>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="kw">from</span> <span class="vr">xgboost</span> <span class="kw">import</span> <span class="cl">XGBRegressor</span>
+<span class="kw">from</span> <span class="vr">sklearn.preprocessing</span> <span class="kw">import</span> <span class="cl">StandardScaler</span>
+
+<span class="cm"># Optional: scale the target (helps convergence)</span>
+<span class="vr">tgt_scaler</span> <span class="kw">=</span> <span class="cl">StandardScaler</span>()
+<span class="vr">y_scaled</span> <span class="kw">=</span> <span class="vr">tgt_scaler</span>.<span class="fn">fit_transform</span>(<span class="vr">y_train</span>.<span class="fn">values</span>.<span class="fn">reshape</span>(<span class="kw">-</span><span class="nm">1</span>, <span class="nm">1</span>)).<span class="fn">ravel</span>()
+
+<span class="vr">model</span> <span class="kw">=</span> <span class="cl">XGBRegressor</span>()
+<span class="vr">model</span>.<span class="fn">fit</span>(<span class="vr">X_train</span>, <span class="vr">y_scaled</span>)
+
+<span class="vr">raw_preds</span> <span class="kw">=</span> <span class="vr">model</span>.<span class="fn">predict</span>(<span class="vr">X_test</span>)
+<span class="vr">preds</span> <span class="kw">=</span> <span class="vr">tgt_scaler</span>.<span class="fn">inverse_transform</span>(<span class="vr">raw_preds</span>.<span class="fn">reshape</span>(<span class="kw">-</span><span class="nm">1</span>, <span class="nm">1</span>))</pre>
+    </div>
+
+    <h3 class="blue">Pipeline — keep it clean</h3>
+    <p>Chain preprocessing + model. Prevents data leakage and simplifies deployment.</p>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="kw">from</span> <span class="vr">sklearn.pipeline</span> <span class="kw">import</span> <span class="fn">make_pipeline</span>
+
+<span class="vr">pipe</span> <span class="kw">=</span> <span class="fn">make_pipeline</span>(
+    <span class="cl">StandardScaler</span>(),
+    <span class="cl">RandomForestRegressor</span>(<span class="vr">n_estimators</span><span class="kw">=</span><span class="nm">100</span>)
+)
+<span class="vr">pipe</span>.<span class="fn">fit</span>(<span class="vr">X_train</span>, <span class="vr">y_train</span>)
+<span class="vr">preds</span> <span class="kw">=</span> <span class="vr">pipe</span>.<span class="fn">predict</span>(<span class="vr">X_test</span>)
+
+<span class="cm"># Cross-validate the whole pipeline safely</span>
+<span class="vr">scores</span> <span class="kw">=</span> <span class="fn">cross_val_score</span>(<span class="vr">pipe</span>, <span class="vr">X_train</span>, <span class="vr">y_train</span>,
+                          <span class="vr">cv</span><span class="kw">=</span><span class="nm">10</span>, <span class="vr">scoring</span><span class="kw">=</span><span class="str">'neg_mean_squared_error'</span>)
+<span class="vr">rmse</span> <span class="kw">=</span> <span class="vr">np</span>.<span class="fn">sqrt</span>(<span class="kw">-</span><span class="vr">scores</span>)
+<span class="fn">print</span>(<span class="str">f"Mean RMSE: </span>{<span class="vr">rmse</span>.<span class="fn">mean</span>():.0f}<span class="str"> ± </span>{<span class="vr">rmse</span>.<span class="fn">std</span>():.0f}<span class="str">"</span>)</pre>
+    </div>
+
+    <h3 class="blue">Hyperparameter Search Methods</h3>
+    <table>
+      <thead>
+        <tr><th>Method</th><th>When</th><th>Speed</th><th>How</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Grid Search</td><td>Small param space, need exhaustive</td><td>Slow</td><td><code>GridSearchCV(model, params, cv=10)</code></td></tr>
+        <tr><td>Random Search</td><td>Large param space, quick wins</td><td>Fast</td><td><code>RandomizedSearchCV(model, params, n_iter=20)</code></td></tr>
+        <tr><td>Halving Search</td><td>Limited compute, many candidates</td><td>Very fast</td><td><code>HalvingGridSearchCV</code></td></tr>
+        <tr><td>Bayesian (Optuna)</td><td>Expensive models, few trials</td><td>Smart</td><td><code>pip install optuna</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════ 08 EVAL -->
+  <section id="eval">
+    <div class="section-label">08</div>
+    <h2>Evaluation</h2>
+
+    <h3 class="green">RMSE — Root Mean Squared Error</h3>
+    <p>Same unit as target. Penalizes large errors heavily. Lower = better.</p>
+    <div class="formula">
+      <div class="label">Formula</div>
+      RMSE = √( (1/n) · Σ (y_pred − y_true)² )
+    </div>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="kw">from</span> <span class="vr">sklearn.metrics</span> <span class="kw">import</span> <span class="fn">mean_squared_error</span>
+
+<span class="vr">rmse</span> <span class="kw">=</span> <span class="vr">np</span>.<span class="fn">sqrt</span>(<span class="fn">mean_squared_error</span>(<span class="vr">y_test</span>, <span class="vr">preds</span>))
+<span class="fn">print</span>(<span class="str">f"RMSE: {rmse:.2f}"</span>)</pre>
+    </div>
+
+    <h3 class="green">Average Percentage Difference</h3>
+    <p>More intuitive than RMSE — tells you the average % error relative to the actual value. Domain-agnostic.</p>
+    <div class="formula">
+      <div class="label">Formula</div>
+      APD = mean( |y_pred − y_true| / ((y_pred + y_true) / 2) ) × 100
+    </div>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="kw">def</span> <span class="fn">avg_pct_diff</span>(<span class="vr">actual</span>, <span class="vr">predicted</span>):
+    <span class="vr">diff</span>    <span class="kw">=</span> <span class="vr">np</span>.<span class="fn">abs</span>(<span class="vr">actual</span> <span class="kw">-</span> <span class="vr">predicted</span>)
+    <span class="vr">avg</span>     <span class="kw">=</span> (<span class="vr">actual</span> <span class="kw">+</span> <span class="vr">predicted</span>) <span class="kw">/</span> <span class="nm">2</span>
+    <span class="kw">return</span>  <span class="vr">np</span>.<span class="fn">mean</span>(<span class="vr">diff</span> <span class="kw">/</span> <span class="vr">avg</span> <span class="kw">*</span> <span class="nm">100</span>)
+
+<span class="fn">print</span>(<span class="str">f"Ridge APD:  </span>{<span class="fn">avg_pct_diff</span>(<span class="vr">y_test</span>, <span class="vr">preds_ridge</span>):.2f}<span class="str">%"</span>)
+<span class="fn">print</span>(<span class="str">f"RF APD:     </span>{<span class="fn">avg_pct_diff</span>(<span class="vr">y_test</span>, <span class="vr">preds_rf</span>):.2f}<span class="str">%"</span>)
+<span class="fn">print</span>(<span class="str">f"XGBoost APD:</span>{<span class="fn">avg_pct_diff</span>(<span class="vr">y_test</span>, <span class="vr">preds_xgb</span>):.2f}<span class="str">%"</span>)</pre>
+    </div>
+
+    <h3 class="green">Cross-validation — don't trust a single split</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span></div>
+      <pre><span class="vr">scores</span> <span class="kw">=</span> <span class="fn">cross_val_score</span>(
+    <span class="vr">model</span>, <span class="vr">X_train</span>, <span class="vr">y_train</span>,
+    <span class="vr">cv</span><span class="kw">=</span><span class="nm">10</span>,                              <span class="cm"># 10-fold</span>
+    <span class="vr">scoring</span><span class="kw">=</span><span class="str">'neg_mean_squared_error'</span>    <span class="cm"># sklearn returns negative MSE</span>
+)
+<span class="vr">rmse_cv</span> <span class="kw">=</span> <span class="vr">np</span>.<span class="fn">sqrt</span>(<span class="kw">-</span><span class="vr">scores</span>)
+<span class="fn">print</span>(<span class="str">f"CV RMSE: {rmse_cv.mean():.0f} ± {rmse_cv.std():.0f}"</span>)
+<span class="cm"># High std = model is unstable / overfitting on some folds</span></pre>
+    </div>
+
+    <div class="callout green">
+      <strong>For embedded/TinyML:</strong> RMSE tells you raw error magnitude. APD tells you <em>relative</em> error — e.g., "my model is 12% off on average." For a battery SoC estimator, 12% off is catastrophic; for a price recommender, it might be acceptable. Always sanity-check with domain context.
+    </div>
+  </section>
+
+</div><!-- /container -->
+
+</body>
+</html>
